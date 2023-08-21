@@ -1,5 +1,5 @@
 # LotterySix-Calculator
-Calculator web app for the [SpigotMC pluign LotterySix](https://www.spigotmc.org/resources/107573/).<br>
+Web app for calculating chances and prizes in the [SpigotMC plugin LotterySix](https://www.spigotmc.org/resources/107573/).<br>
 More info on LotterySix's [Main GitHub Repository](https://github.com/LOOHP/LotterySix).
 
 ## Language
