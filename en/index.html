@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="icon" type="image/x-icon" href="https://resources.loohpjames.com/spigot/plugins/lotterysix/icon.png">
+    <title id="title">LotterySix Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css" />
+</head>
+
+<body>
+    <style>
+        .table {
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 240px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            padding: 5px 0;
+            border-radius: 6px;
+
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -120px;
+
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        .tab-disabled {
+            pointer-events: none;
+            cursor: default;
+            color: #C1C1C1;
+        }
+    </style>
+
+    <section class="hero is-link is-fullheight has-background-danger">
+        <nav class="navbar">
+            <div class="container">
+                <div class="navbar-brand">
+                    <a class="navbar-item" href="https://loohpjames.com">
+                        <img src="https://loohpjames.com/assets/images/profile_rounded.png" width="28" height="28" alt="LoohpJames">
+                    </a>
+                    <a class="navbar-item" href=".">
+                        <img src="https://resources.loohpjames.com/spigot/plugins/lotterysix/icon.png" width="28" height="28" alt="LotterySix">
+                    </a>
+                    <a id="burger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" onclick="toggleBurger()">
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                    </a>
+                </div>
+                <div id="navbarMenuHeroA" class="navbar-menu">
+                    <div class="navbar-end">
+                        <a href="https://github.com/LOOHP/LotterySix/wiki/LotterySix-Draw-&-Prizes-Explanation" class="navbar-item">
+                            Explaination
+                        </a>
+                        <a onclick="window.location='../ch' + window.location.search;" class="navbar-item">
+                            中文
+                        </a>
+                        <a href="https://www.spigotmc.org/resources/107573/" target="_blank" class="navbar-item">
+                            SpigotMC
+                        </a>
+                        <a href="https://github.com/LOOHP/LotterySix" target="_blank" class="navbar-item">
+                            GitHub
+                        </a>
+                        <a href="https://loohpjames.com/dev-discord" target="_blank" class="navbar-item">
+                            Discord
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="hero-body">
+            <div class="container has-text-centered">
+               <div class="hero-body">
+                    <div class="container has-text-centered">
+                       <div class="column is-8 is-offset-2">
+                            <h3 class="title"><label id="name">LotterySix</label> Calculator</h3>
+                            <div class="box has-background-white-ter">
+                                <div class="box has-background-grey-lighter">
+                                    <div class="columns">
+                                        <div class="column">
+                                            <h5 class="title is-5 has-text-black">Unit Price</h5>
+                                            <input class="input" type="number" value="10" id="price-per-unit-bet" min="0" step="2">
+                                        </div>
+                                        <div class="column">
+                                            <h5 class="title is-5 has-text-black">Number of Numbers</h5>
+                                            <input class="input" type="number" value="39" id="number-of-numbers" min="7" max="49">
+                                        </div>
+                                    </div>
+                                </div>
+                                <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <th>Tier</th>
+                                        <th style="text-align: right;">Prize Qualification</th>
+                                        <th style="text-align: right;">Chance</th>
+                                        <th style="text-align: right;"><div class="tooltip">Unit Prize Allocation<span class="tooltiptext">Might be lowered proportionally due to constraints</span></div></th>
+                                    </tr>
+                                    <tr>
+                                        <th>1st</th>
+                                        <th style="text-align: right;"><div class="tooltip">🔴🔴🔴🔴🔴🔴 + ⚪<span class="tooltiptext">Match all 6 Drawn Numbers</span></div></th>
+                                        <th style="text-align: right;">1 / <label id="first-chance">0</label></th>
+                                        <th style="text-align: right;"><div class="tooltip">Variable<span class="tooltiptext">1st Tier has no constraints</span></div></th>
+                                    </tr>
+                                    <tr>
+                                        <th>2nd</th>
+                                        <th style="text-align: right;"><div class="tooltip">🔴🔴🔴🔴🔴⚪ + 🟡<span class="tooltiptext">Match 5 Drawn Numbers + Special Number</span></div></th>
+                                        <th style="text-align: right;">1 / <label id="second-chance">0</label></th>
+                                        <th style="text-align: right;"><div class="tooltip">Variable<span class="tooltiptext">Must be 2 times lower than 1st Tier</span></div></th>
+                                    </tr>
+                                    <tr>
+                                        <th>3rd</th>
+                                        <th style="text-align: right;"><div class="tooltip">🔴🔴🔴🔴🔴⚪ + ⚪<span class="tooltiptext">Match 5 Drawn Numbers</span></div></th>
+                                        <th style="text-align: right;">1 / <label id="third-chance">0</label></th>
+                                        <th style="text-align: right;"><div class="tooltip">Variable<span class="tooltiptext">Must be 2 times lower than 2nd Tier</span></div></th>
+                                    </tr>
+                                    <tr>
+                                        <th>4th</th>
+                                        <th style="text-align: right;"><div class="tooltip">🔴🔴🔴🔴⚪⚪ + 🟡<span class="tooltiptext">Match 4 Drawn Numbers + Special Number</span></div></th>
+                                        <th style="text-align: right;">1 / <label id="fourth-chance">0</label></th>
+                                        <th style="text-align: right;"><div class="tooltip">$<label id="fourth-prize">0</label><span class="tooltiptext">Must be 2 times lower than 3rd Tier</span></div></th>
+                                    </tr>
+                                    <tr>
+                                        <th>5th</th>
+                                        <th style="text-align: right;"><div class="tooltip">🔴🔴🔴🔴⚪⚪ + ⚪<span class="tooltiptext">Match 4 Drawn Numbers</span></div></th>
+                                        <th style="text-align: right;">1 / <label id="fifth-chance">0</label></th>
+                                        <th style="text-align: right;"><div class="tooltip">$<label id="fifth-prize">0</label><span class="tooltiptext">Must be <label id="fifth-constraint">15</label> times lower than 4th Tier</span></div></th>
+                                    </tr>
+                                    <tr>
+                                        <th>6th</th>
+                                        <th style="text-align: right;"><div class="tooltip">🔴🔴🔴⚪⚪⚪ + 🟡<span class="tooltiptext">Match 3 Drawn Numbers + Special Number</span></div></th>
+                                        <th style="text-align: right;">1 / <label id="sixth-chance">0</label></th>
+                                        <th style="text-align: right;"><div class="tooltip">$<label id="sixth-prize">0</label><span class="tooltiptext">Must be <label id="sixth-constraint">2</label> times lower than 5th Tier</span></div></th>
+                                    </tr>
+                                    <tr>
+                                        <th>7th</th>
+                                        <th style="text-align: right;"><div class="tooltip">🔴🔴🔴⚪⚪⚪ + ⚪<span class="tooltiptext">Match 3 Drawn Numbers</span></div></th>
+                                        <th style="text-align: right;">1 / <label id="seventh-chance">0</label></th>
+                                        <th style="text-align: right;"><div class="tooltip">$<label id="seventh-prize">0</label><span class="tooltiptext">Must be <label id="seventh-constraint">8</label> times lower than 6th Tier</span></div></th>
+                                    </tr>                           
+                                </tbody>
+                                </table>
+                                <div class="tabs is-toggle is-fullwidth">
+                                    <ul>
+                                        <li class="is-active" id="buy-cal">
+                                            <a>
+                                                <span>Lottery Ticket Cal.</span>
+                                            </a>
+                                        </li>
+                                        <li id="chance-cal">
+                                            <a>
+                                                <span>Average Winning Units Cal.</span>
+                                            </a>
+                                        </li>
+                                        <li id="lowest-prize-cal">
+                                            <a>
+                                                <span>Recommended Lowest Top Prize Cal.</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="box has-background-grey-lighter" id="buy-input">
+                                    <div class="columns">
+                                        <div class="column">
+                                            <h5 class="title is-5 has-text-black">No. of Bankers</h5>
+                                            <input class="input" type="number" value="0" id="bankers" min="0" max="5">
+                                        </div>
+                                        <div class="column">
+                                            <h5 class="title is-5 has-text-black">No. of Selections</h5>
+                                            <input class="input" type="number" value="6" id="selections" min="6" max="49">
+                                        </div>
+                                        <div class="column">
+                                            <h5 class="title is-5 has-text-black">Investment</h5>
+                                            <div class="select">
+                                                <select id="unit">
+                                                    <option id="unit-price" value="0"></option>
+                                                    <option id="partial-unit-price" value="1"></option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <table class="table" id="buy-table">
+                                <tbody>
+                                    <tr>
+                                        <th>Number of Bets (Chances)</th>
+                                        <th>Total Price</th>
+                                    </tr>
+                                    <tr>
+                                        <th><label id="number-of-bets">0 <label style="color: #C1C1C1;">x1.0</label></label></th>
+                                        <th>$<label id="total-price">0</label></th>
+                                    </tr>
+                                </tbody>
+                                </table>
+                                <div class="box has-background-grey-lighter" id="chance-input" style="display: none;">
+                                    <div class="columns">
+                                        <div class="column">
+                                            <h5 class="title is-5 has-text-black">Average Turnover</h5>
+                                            <input class="input" type="number" value="0" id="total-bets" min="0" step="5">
+                                        </div>
+                                    </div>
+                                </div>                            
+                                <table class="table" id="chance-table" style="display: none;">
+                                <tbody>
+                                    <tr>
+                                        <th>Tier</th>
+                                        <th style="text-align: right;">Average Winning Units</th>
+                                    </tr>
+                                    <tr>
+                                        <th>1st</th>
+                                        <th style="text-align: right;"><label id="first-chance-count">0</label></th>
+                                    </tr>
+                                    <tr>
+                                        <th>2nd</th>
+                                        <th style="text-align: right;"><label id="second-chance-count">0</label></th>
+                                    </tr>
+                                    <tr>
+                                        <th>3rd</th>
+                                        <th style="text-align: right;"><label id="third-chance-count">0</label></th>
+                                    </tr>
+                                    <tr>
+                                        <th>4th</th>
+                                        <th style="text-align: right;"><label id="fourth-chance-count">0</label></th>
+                                    </tr>
+                                    <tr>
+                                        <th>5th</th>
+                                        <th style="text-align: right;"><label id="fifth-chance-count">0</label></th>
+                                    </tr>
+                                    <tr>
+                                        <th>6th</th>
+                                        <th style="text-align: right;"><label id="sixth-chance-count">0</label></th>
+                                    </tr>
+                                    <tr>
+                                        <th>7th</th>
+                                        <th style="text-align: right;"><label id="seventh-chance-count">0</label></th>
+                                    </tr>
+                                </tbody>
+                                </table>
+                                <div class="box has-background-grey-lighter" id="lowest-prize-input" style="display: none;">
+                                    <div class="columns">
+                                        <div class="column">
+                                            <h5 class="title is-5 has-text-black">Prize Calculation Mode</h5>
+                                            <div class="select">
+                                                <select id="prize-cal-mode">
+                                                    <option value="0">DEFAULT</option>
+                                                    <option value="1">HKJC</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>                            
+                                <table class="table" id="lowest-prize-table" style="display: none;">
+                                <tbody>
+                                    <tr>
+                                        <th style="text-align: center;">Recommended Top Places Prize</th>
+                                    </tr>
+                                    <tr>
+                                        <th style="text-align: center;">$<label id="lowest-prize-recommended">0</label></th>
+                                    </tr>
+                                </tbody>
+                                </table>
+                                <h5 class="title is-5" style="color: #111770;">Don't bet your life away. Please bet responsibly.</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="has-text-centered">
+            <strong>LotterySix</strong> by <a href="https://loohpjames.com">LoohpJames</a><br>
+            Grateful for your support!
+            <br>
+            <br>
+        </div>
+    </section>
+</body>
+
+<script>
+    const toggleBurger = () => {
+        let burgerIcon = document.getElementById('burger');
+        let dropMenu = document.getElementById('navbarMenuHeroA');
+        burgerIcon.classList.toggle('is-active');
+        dropMenu.classList.toggle('is-active');
+    };
+    const getUrlParameter = (sParam) => {
+        let sPageURL = window.location.search.substring(1);
+        let sURLVariables = sPageURL.split('&');
+        let sParameterName;
+        for (let i = 0; i < sURLVariables.length; i++) {
+            sParameterName = sURLVariables[i].split('=');
+
+            if (sParameterName[0] === sParam) {
+                return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+            }
+        }
+        return null;
+    };
+    const rangeCheck = (a, min, max) => {
+        return a >= min && a <= max;
+    };
+    const probabilityFormula = (a, b) => {
+        let result = 1;
+        for (; b > 0; a--, b--) {
+            result *= a / b;
+        }
+        return result;
+    };
+    const factorial = (num) => {
+        let bigInt = BigInt(num);
+        let factorial = 1n;
+        for (let i = 0n; i < bigInt; i++) {
+            factorial *= bigInt - i;
+        }
+        return factorial;
+    };
+    const calculateCombinations = (selection, banker) => {
+        if (banker <= 0) {
+            return Number(factorial(selection) / (factorial(selection - 6) * 720n));
+        } else { 
+            return Number(factorial(selection) / (factorial(selection - (6 - banker)) * (factorial(6 - banker))));
+        }
+    };
+    const roundTo2Decimal = (a) => {
+        return Math.round((a + Number.EPSILON) * 100) / 100;
+    };
+    const toPrecision = (number, precision, direction) => {
+        precision -= Math.floor(number).toString().length;
+        let order = Math.pow(10, precision);
+        number *= order;
+        let option = (direction === 'down' ? 'floor' : 'ceil');
+        return Math[option].call(null, number) / order;
+    };
+    const calculate = () => {
+        calculate0(false);
+    };
+    const calculateSelection = () => {
+        calculate0(true);
+    };
+    const calculate0 = (a) => {
+        let pricePerBet = Math.ceil(document.getElementById('price-per-unit-bet').value / 2) * 2;
+        let numberOfChoices = document.getElementById('number-of-numbers').value;
+
+        if (pricePerBet < 0 || !rangeCheck(numberOfChoices, 7, 49)) {
+            return;
+        }
+
+        let pts = getUrlParameter("pts");
+        let fourthMultiplier = 960;
+        let fifthMultiplier = 64;
+        let sixthMultiplier = 32;
+        let seventhMultiplier = 4;
+        if (pts != null) {
+            let ptsSections = pts.split(",");
+            if (ptsSections.length == 4) {
+                seventhMultiplier = Number(ptsSections[3]);
+                sixthMultiplier = seventhMultiplier * Number(ptsSections[2]);
+                fifthMultiplier = sixthMultiplier * Number(ptsSections[1]);
+                fourthMultiplier = fifthMultiplier * Number(ptsSections[0]);
+            }
+        }
+
+        let firstChance = probabilityFormula(numberOfChoices, 6);
+        let secondChance = 1.0 / (probabilityFormula(6, 5) / probabilityFormula(numberOfChoices, 6));
+        let thirdChance = 1.0 / (probabilityFormula(6, 5) * probabilityFormula(numberOfChoices - 7, 1) / probabilityFormula(numberOfChoices, 6));
+        let fourthChance = 1.0 / (probabilityFormula(6, 4) * probabilityFormula(numberOfChoices - 7, 1) / probabilityFormula(numberOfChoices, 6));
+        let fifthChance = 1.0 / (probabilityFormula(6, 4) * probabilityFormula(numberOfChoices - 7, 2) / probabilityFormula(numberOfChoices, 6));
+        let sixthChance = 1.0 / (probabilityFormula(6, 3) * probabilityFormula(numberOfChoices - 7, 2) / probabilityFormula(numberOfChoices, 6));
+        let seventhChance = 1.0 / (probabilityFormula(6, 3) * probabilityFormula(numberOfChoices - 7, 3) / probabilityFormula(numberOfChoices, 6));
+
+        document.getElementById('first-chance').innerHTML = isFinite(firstChance) ? roundTo2Decimal(firstChance) : "-";
+        document.getElementById('second-chance').innerHTML = isFinite(secondChance) ? roundTo2Decimal(secondChance) : "-";
+        document.getElementById('third-chance').innerHTML = isFinite(thirdChance) ? roundTo2Decimal(thirdChance) : "-";
+        document.getElementById('fourth-chance').innerHTML = isFinite(fourthChance) ? roundTo2Decimal(fourthChance) : "-";
+        document.getElementById('fifth-chance').innerHTML = isFinite(fifthChance) ? roundTo2Decimal(fifthChance) : "-";
+        document.getElementById('sixth-chance').innerHTML = isFinite(sixthChance) ? roundTo2Decimal(sixthChance) : "-";
+        document.getElementById('seventh-chance').innerHTML = isFinite(seventhChance) ? roundTo2Decimal(seventhChance) : "-";
+
+        if (!isFinite(firstChance)) firstChance = 0;
+        if (!isFinite(secondChance)) secondChance = 0;
+        if (!isFinite(thirdChance)) thirdChance = 0;
+        if (!isFinite(fourthChance)) fourthChance = 0;
+        if (!isFinite(fifthChance)) fifthChance = 0;
+        if (!isFinite(sixthChance)) sixthChance = 0;
+        if (!isFinite(seventhChance)) seventhChance = 0;
+
+        document.getElementById('first-chance').innerHTML = roundTo2Decimal(firstChance);
+        document.getElementById('second-chance').innerHTML = roundTo2Decimal(secondChance);
+        document.getElementById('third-chance').innerHTML = roundTo2Decimal(thirdChance);
+        document.getElementById('fourth-chance').innerHTML = roundTo2Decimal(fourthChance);
+        document.getElementById('fifth-chance').innerHTML = roundTo2Decimal(fifthChance);
+        document.getElementById('sixth-chance').innerHTML = roundTo2Decimal(sixthChance);
+        document.getElementById('seventh-chance').innerHTML = roundTo2Decimal(seventhChance);
+
+        document.getElementById('fourth-prize').innerHTML = (pricePerBet * fourthMultiplier).toLocaleString("en-US");
+        document.getElementById('fifth-prize').innerHTML = (pricePerBet * fifthMultiplier).toLocaleString("en-US");
+        document.getElementById('sixth-prize').innerHTML = (pricePerBet * sixthMultiplier).toLocaleString("en-US");
+        document.getElementById('seventh-prize').innerHTML = (pricePerBet * seventhMultiplier).toLocaleString("en-US");
+
+        document.getElementById('seventh-constraint').innerHTML = sixthMultiplier / seventhMultiplier;
+        document.getElementById('sixth-constraint').innerHTML = fifthMultiplier / sixthMultiplier;
+        document.getElementById('fifth-constraint').innerHTML = fourthMultiplier / fifthMultiplier;
+
+        let bankers = document.getElementById('bankers').value;
+        let selections = document.getElementById('selections').value;
+        let unit = document.getElementById('unit').value;
+
+        if (!rangeCheck(bankers, 0, 5)) {
+            return;
+        }
+
+        document.getElementById('selections').max = numberOfChoices - bankers;
+        document.getElementById('selections').min = bankers == 0 ? 6 : (7 - bankers);
+        if (!a && selections != '') {
+            document.getElementById('selections').value = Math.min(numberOfChoices - bankers, Math.max(bankers == 0 ? 6 : (7 - bankers), selections));
+        }
+
+        selections = document.getElementById('selections').value;
+
+        if (!rangeCheck(selections, 6 - bankers, numberOfChoices - bankers)) {
+            return;
+        }
+
+        document.getElementById('unit-price').innerHTML = "Unit Investment ($" + (pricePerBet).toLocaleString("en-US") + ")";
+        document.getElementById('partial-unit-price').innerHTML = "Partal Unit Investment ($" + (pricePerBet / 2).toLocaleString("en-US") + ")";
+
+        if (bankers == 0 && selections == 6) {
+            document.getElementById('unit').getElementsByTagName("option")[1].disabled = true;
+            document.getElementById('unit').value = 0;
+            unit = 0;
+        } else {
+            document.getElementById('unit').getElementsByTagName("option")[1].disabled = false;
+        }
+
+        let combinations = calculateCombinations(selections, bankers);
+        let totalPrice = combinations * pricePerBet;
+        if (unit == 1) {
+            totalPrice /= 2;
+            document.getElementById('number-of-bets').innerHTML = "<div class=\"tooltip\">" + combinations.toLocaleString("en-US") + " <label style=\"color: #C1C1C1;\">x0.5</label><span class=\"tooltiptext\">Partal Unit Investment are seen as 0.5 unit bets<br>Prize allocated will be halved<br>This bet is seen as " + (combinations / 2).toLocaleString("en-US") + " units</span></div>";
+        } else {
+            document.getElementById('number-of-bets').innerHTML = combinations.toLocaleString("en-US") + " <label style=\"color: #C1C1C1;\">x1.0</label>";
+        }
+        document.getElementById('total-price').innerHTML = totalPrice.toLocaleString("en-US");
+
+        let step = pricePerBet / 2;
+        document.getElementById('total-bets').step = step;
+        let totalBetsRaw = document.getElementById('total-bets').value;
+        let totalBets = Math.floor(totalBetsRaw / step) * step;
+        let totalBetUnits = totalBets / pricePerBet;
+
+        if (totalBets <= 0) {
+            document.getElementById('first-chance-count').innerHTML = 0;
+            document.getElementById('second-chance-count').innerHTML = 0;
+            document.getElementById('third-chance-count').innerHTML = 0;
+            document.getElementById('fourth-chance-count').innerHTML = 0;
+            document.getElementById('fifth-chance-count').innerHTML = 0;
+            document.getElementById('sixth-chance-count').innerHTML = 0;
+            document.getElementById('seventh-chance-count').innerHTML = 0;
+        } else {
+            document.getElementById('first-chance-count').innerHTML = totalBetUnits > firstChance ? roundTo2Decimal(totalBetUnits / firstChance) : "1 / " + (roundTo2Decimal(firstChance / totalBetUnits));
+            document.getElementById('second-chance-count').innerHTML = totalBetUnits > secondChance ? roundTo2Decimal(totalBetUnits / secondChance) : "1 / " + (roundTo2Decimal(secondChance / totalBetUnits));
+            document.getElementById('third-chance-count').innerHTML = totalBetUnits > thirdChance ? roundTo2Decimal(totalBetUnits / thirdChance) : "1 / " + (roundTo2Decimal(thirdChance / totalBetUnits));
+            document.getElementById('fourth-chance-count').innerHTML = totalBetUnits > fourthChance ? roundTo2Decimal(totalBetUnits / fourthChance) : "1 / " + (roundTo2Decimal(fourthChance / totalBetUnits));
+            document.getElementById('fifth-chance-count').innerHTML = totalBetUnits > fifthChance ? roundTo2Decimal(totalBetUnits / fifthChance) : "1 / " + (roundTo2Decimal(fifthChance / totalBetUnits));
+            document.getElementById('sixth-chance-count').innerHTML = totalBetUnits > sixthChance ? roundTo2Decimal(totalBetUnits / sixthChance) : "1 / " + (roundTo2Decimal(sixthChance / totalBetUnits));
+            document.getElementById('seventh-chance-count').innerHTML = totalBetUnits > seventhChance ? roundTo2Decimal(totalBetUnits / seventhChance) : "1 / " + (roundTo2Decimal(seventhChance / totalBetUnits));
+        }
+
+        let prizeCalMode = document.getElementById('prize-cal-mode').value;
+        if (prizeCalMode == 0) {
+            let firstPlaceRatio = firstChance / 3262623;
+            let recommended = toPrecision(Math.min(800000 * pricePerBet, Math.max(800000 * pricePerBet * firstPlaceRatio, pricePerBet)), 2, "down");
+            document.getElementById('lowest-prize-recommended').innerHTML = recommended.toLocaleString("en-US");
+        } else {
+            let firstPlaceRatio = firstChance / 13983816;
+            let recommended = toPrecision(Math.max(800000 * pricePerBet * firstPlaceRatio, pricePerBet), 2, "down");
+            document.getElementById('lowest-prize-recommended').innerHTML = recommended.toLocaleString("en-US");
+        }
+    }
+    const handleTabs = element => {
+        let buyCal = document.getElementById('buy-cal');
+        let chanceCal = document.getElementById('chance-cal');
+        let lowestPrizeCal = document.getElementById('lowest-prize-cal');
+
+        document.getElementById('buy-input').style.display = "none";
+        document.getElementById('buy-table').style.display = "none";
+        document.getElementById('chance-input').style.display = "none";
+        document.getElementById('chance-table').style.display = "none";
+        document.getElementById('lowest-prize-input').style.display = "none";
+        document.getElementById('lowest-prize-table').style.display = "none";
+
+        buyCal.classList.remove('is-active');
+        chanceCal.classList.remove('is-active');
+        lowestPrizeCal.classList.remove('is-active');
+
+        switch (element) {
+            case 0: {
+                buyCal.classList.add('is-active');
+                document.getElementById('buy-input').style.display = "";
+                document.getElementById('buy-table').style.display = "";
+                break;
+            }
+            case 1: {
+                chanceCal.classList.add('is-active');
+                document.getElementById('chance-input').style.display = "";
+                document.getElementById('chance-table').style.display = "";
+                break;
+            }
+            case 2: {
+                lowestPrizeCal.classList.add('is-active');
+                document.getElementById('lowest-prize-input').style.display = "";
+                document.getElementById('lowest-prize-table').style.display = "";
+                break;
+            }
+        }
+    };
+    document.getElementById('price-per-unit-bet').addEventListener("keyup", calculate, false);
+    document.getElementById('number-of-numbers').addEventListener("keyup", calculate, false);
+    document.getElementById('price-per-unit-bet').addEventListener("change", calculate, false);
+    document.getElementById('number-of-numbers').addEventListener("change", calculate, false);
+
+    document.getElementById('bankers').addEventListener("keyup", calculate, false);
+    document.getElementById('selections').addEventListener("keyup", calculateSelection, false);
+    document.getElementById('bankers').addEventListener("change", calculate, false);
+    document.getElementById('selections').addEventListener("change", calculateSelection, false);
+    document.getElementById('unit').addEventListener("change", calculate, false);
+
+    document.getElementById('total-bets').addEventListener("keyup", calculate, false);
+    document.getElementById('total-bets').addEventListener("change", calculate, false);
+
+    document.getElementById('prize-cal-mode').addEventListener("change", calculate, false);
+
+    document.getElementById('buy-cal').addEventListener("click", () => handleTabs(0), false);
+    document.getElementById('chance-cal').addEventListener("click", () => handleTabs(1), false);
+    document.getElementById('lowest-prize-cal').addEventListener("click", () => handleTabs(2), false);
+
+    let queryPrice = getUrlParameter("price");
+    if (queryPrice != null && !isNaN(queryPrice)) {
+        document.getElementById('price-per-unit-bet').value = parseInt(queryPrice);
+    }
+
+    let queryChoices = getUrlParameter("choices");
+    if (queryChoices != null && !isNaN(queryChoices)) {
+        document.getElementById('number-of-numbers').value = parseInt(queryChoices);
+    }
+
+    let queryName = getUrlParameter("name");
+    if (queryName != null) {
+        document.getElementById('name').innerHTML = queryName;
+        document.getElementById('title').innerHTML = queryName + " Calculator";
+    }
+
+    let queryLocked = getUrlParameter("locked");
+    if (queryLocked != null && queryLocked === 'true') {
+        document.getElementById('price-per-unit-bet').disabled = true;
+        document.getElementById('number-of-numbers').disabled = true;
+        document.getElementById('chance-cal').classList.add("tab-disabled");
+        document.getElementById('lowest-prize-cal').classList.add("tab-disabled");
+    }
+
+    calculate();
+</script>
+
+</html>
